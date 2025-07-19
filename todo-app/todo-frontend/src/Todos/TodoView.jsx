@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from '../util/apiClient'
 
-import List from './List'
+import Todo from './Todo'
 import Form from './Form'
 
 const TodoView = () => {
@@ -22,12 +22,12 @@ const TodoView = () => {
     setTodos([...todos, data])
   }
 
-  const deleteTodo = async (todo) => {
+  const deleteTodo =  (todo) => async() => {
     await axios.delete(`/todos/${todo._id}`)
     refreshTodos()
   }
 
-  const completeTodo = async (todo) => {
+  const completeTodo =  (todo)=> async() => {
     await axios.put(`/todos/${todo._id}`, {
       text: todo.text,
       done: true
@@ -36,11 +36,12 @@ const TodoView = () => {
   }
   console.log('todosBefore', todos)
   return (
-    <>
+    <view>
       <h1>Todos</h1>
       <Form createTodo={createTodo} />
-      <List todos={todos} deleteTodo={deleteTodo} completeTodo={completeTodo} />
-    </>
+     
+      {todos.map(todo => <Todo key={todo._id} todo={todo} onClickDelete={deleteTodo} onClickComplete={completeTodo} /> ).reduce((acc, cur) => [...acc, <hr />, cur], [])}
+    </view>
   )
 }
 
