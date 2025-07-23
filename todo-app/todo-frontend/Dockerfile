@@ -14,9 +14,8 @@ USER node
 
 RUN npm run test
 
-FROM node:20 AS build-stage
 
-ENV VITE_BACKEND_URL="http://localhost:3000"
+FROM node:20 AS build-stage
 
 WORKDIR .
 
@@ -27,7 +26,7 @@ RUN npm ci
 RUN npm run build
 
 
-FROM nginx:1.25-alpine
+FROM nginx:latest
 
 COPY --from=build-stage /dist /usr/share/nginx/html
 

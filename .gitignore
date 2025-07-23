@@ -62,4 +62,5 @@ typings/
 .next
 
 #redis
-todo-app/todo-backend/redis_data/
+todo-app/redis_data/
+/todo-app/todo-backend/redis_data/

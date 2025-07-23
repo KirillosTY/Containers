@@ -1,0 +1,56 @@
+services:
+  mongo:
+    image: mongo
+    ports:
+     - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: the_database
+
+    volumes: 
+      - ./todo-backend/mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+  redis:
+    image: redis
+    ports:
+     - 6379:6379
+    command: ['redis-server', '--appendonly', 'yes'] # Overwrite the CMD
+    volumes: # Declare the volume
+      - ./todo-backend/redis_data:/data
+    
+  backend:
+    image: backend
+    build:
+      context: ./todo-backend/ # The context will pick this directory as the "build context"
+      dockerfile: Dockerfile # This will simply tell which dockerfile to read
+    volumes:
+      - ./:/src/app # The path can be relative, so ./ is enough to say "the same location as the docker-compose.yml"
+    
+    container_name: backend-dev # This will name the container hello-front-dev
+    environment: 
+      - REDIS_URL=$REDIS_URL
+      - MONGO_URL=$MONGO_URL
+    depends_on:
+    - mongo
+    - redis
+  app:
+    image: front
+    build:
+      context: ./todo-frontend/ # The context will pick this directory as the "build context"
+      dockerfile: Dockerfile # This will simply tell which dockerfile to read
+    ports:
+      - 8080:80
+      
+    volumes:
+      - ./:/src/app # The path can be relative, so ./ is enough to say "the same location as the docker-compose.yml"
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    environment:
+     - VITE_BACKEND_URL=$VITE_BACKEND_URL
+    container_name: front # This will name the container hello-front-dev
+    depends_on:
+    - backend
+    
+    - redis
+    - mongo
+  debug-helper:
+    image: busybox
