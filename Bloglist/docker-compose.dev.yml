@@ -1,0 +1,53 @@
+services:
+
+  backend:
+    image: 22_backend_dev
+    container_name: blog_dev
+    env_file:
+      - ./part4/.env
+    build: 
+      dockerfile: ./part4/dev.Dockerfile
+      context: .
+    ports:
+    - 3001:3001
+    depends_on:
+      - mongo
+    
+  mongo:
+      image: mongo
+      container_name: dev_mongo
+      ports:
+      - 3456:27017
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: adminMeInFirst
+        MONGO_INITDB_ROOT_PASSWORD: adminIsInSecond
+        MONGO_INITDB_DATABASE: BlogsAndUsers
+      volumes: 
+        - ./part4/mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+
+
+  app:
+    image: front-dev
+    build:
+      context: ./part5/bloglist-frontend 
+      dockerfile: dev.Dockerfile 
+    volumes:
+      - ./:/src/app 
+    environment:
+    - VITE_BACKEND_URL=http://localhost:8080/
+    container_name: front-dev # This will name the container hello-front-dev
+  debug-helper:
+    image: busybox
+
+  nginx:
+      image: nginx:latest
+      volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      ports:
+      - 8080:80
+      container_name: reverse-proxy
+      depends_on:
+      - backend
+      - app
+      - mongo
+    
